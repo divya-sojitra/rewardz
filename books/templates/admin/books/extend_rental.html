@@ -1,0 +1,98 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Extend Rental</h1>
+    
+    <div class="module" style="margin-bottom: 20px;">
+        <h2>Current Rental Details</h2>
+        <table>
+            <tr>
+                <th>Student:</th>
+                <td>{{ rental.user.username }} ({{ rental.user.email }})</td>
+            </tr>
+            <tr>
+                <th>Book:</th>
+                <td>{{ rental.book.title }}</td>
+            </tr>
+            <tr>
+                <th>Pages:</th>
+                <td>{{ rental.book.pages|default:"Unknown" }}</td>
+            </tr>
+            <tr>
+                <th>Start Date:</th>
+                <td>{{ rental.start_date }}</td>
+            </tr>
+            <tr>
+                <th>Current Months:</th>
+                <td>{{ rental.months_rented }}</td>
+            </tr>
+            <tr>
+                <th>Monthly Fee:</th>
+                <td>${{ rental.monthly_fee_cents|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <th>Total Charged So Far:</th>
+                <td>${{ rental.total_charged_cents|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div>
+                <label for="add_months" class="required">Extend by (months):</label>
+                <input type="number" name="add_months" id="add_months" 
+                       value="1" min="1" max="12" required>
+                <p class="help">Number of months to add to the rental.</p>
+            </div>
+        </div>
+        
+        <div class="module" style="margin: 20px 0; padding: 15px; background: #ffffcc;">
+            <h3>Fee Calculation Preview:</h3>
+            <p>
+                <strong>Monthly fee:</strong> ${{ rental.monthly_fee_cents|floatformat:2 }}/month<br>
+                <strong>First month:</strong> FREE (already applied)<br>
+                <strong>Additional months:</strong> Will be charged at monthly rate
+            </p>
+            <p id="preview-calc">
+                If you extend by <strong>1 month</strong>: 
+                Charge = ${{ rental.monthly_fee_cents|floatformat:2 }}<br>
+                New total months: {{ rental.months_rented|add:1 }}<br>
+                New total charged: $<span id="new-total">{{ rental.total_charged_cents|add:rental.monthly_fee_cents|floatformat:2 }}</span>
+            </p>
+        </div>
+        
+        <div class="submit-row">
+            <input type="submit" value="Extend Rental" class="default">
+            <a href="{% url 'admin:books_rental_changelist' %}" class="button cancel-link">Cancel</a>
+        </div>
+    </form>
+    
+    <script>
+        // Dynamic preview calculation
+        const addMonthsInput = document.getElementById('add_months');
+        const previewCalc = document.getElementById('preview-calc');
+        const monthlyFee = {{ rental.monthly_fee_cents }};
+        const currentMonths = {{ rental.months_rented }};
+        const totalCharged = {{ rental.total_charged_cents }};
+        
+        addMonthsInput.addEventListener('input', function() {
+            const addMonths = parseInt(this.value) || 0;
+            const newMonths = currentMonths + addMonths;
+            const charge = monthlyFee * addMonths / 100;
+            const newTotal = (totalCharged + (monthlyFee * addMonths)) / 100;
+            
+            previewCalc.innerHTML = `
+                If you extend by <strong>${addMonths} month(s)</strong>: <br>
+                Charge = $${charge.toFixed(2)}<br>
+                New total months: ${newMonths}<br>
+                New total charged: $${newTotal.toFixed(2)}
+            `;
+        });
+    </script>
+</div>
+{% endblock %}

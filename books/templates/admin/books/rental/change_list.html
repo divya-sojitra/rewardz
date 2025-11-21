@@ -1,0 +1,15 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    <li>
+        <a href="{% url 'admin:books_rental_start' %}" class="addlink">
+            Start New Rental
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'books:all_students' %}" class="viewlink" target="_blank">
+            View All Students Dashboard
+        </a>
+    </li>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Start New Rental</h1>
+    
+    <form method="post" id="rental-form">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div>
+                <label for="user" class="required">Student:</label>
+                <select name="user" id="user" required>
+                    <option value="">Select a student</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }} - {{ user.email }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div>
+                <label for="title" class="required">Book Title:</label>
+                <input type="text" name="title" id="title" required size="60" 
+                       placeholder="e.g., The Great Gatsby">
+                <p class="help">This will search OpenLibrary for the book details.</p>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div>
+                <label for="manual_pages">Pages (optional):</label>
+                <input type="number" name="manual_pages" id="manual_pages" min="0" 
+                       placeholder="Leave empty to auto-fetch from OpenLibrary">
+                <p class="help">
+                    If specified, skips OpenLibrary lookup and uses this value. 
+                    Monthly fee = (pages / 100) dollars.
+                </p>
+            </div>
+        </div>
+        
+        <div class="submit-row">
+            <input type="submit" value="Create Rental" class="default">
+            <a href="{% url 'admin:books_rental_changelist' %}" class="button cancel-link">Cancel</a>
+        </div>
+    </form>
+    
+    <div style="margin-top: 30px; padding: 15px; background: #f0f0f0; border-radius: 5px;">
+        <h3>How it works:</h3>
+        <ul>
+            <li>Select a student from the dropdown</li>
+            <li>Enter the book title</li>
+            <li>System will query OpenLibrary API to fetch book details (pages)</li>
+            <li>If pages are found, monthly fee = (pages / 100) dollars</li>
+            <li><strong>First month is FREE</strong> (no charge)</li>
+            <li>You can manually specify pages if OpenLibrary lookup fails</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
